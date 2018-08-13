@@ -1,0 +1,2 @@
+model_checkpoint_path: "/home/nkh/tensorflow/VDSR/model_4/VDSR.ckpt"
+all_model_checkpoint_paths: "/home/nkh/tensorflow/VDSR/model_4/VDSR.ckpt"
