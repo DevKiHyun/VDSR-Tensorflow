@@ -1,0 +1,164 @@
+import numpy as np
+import matplotlib.pyplot as plt
+import cv2
+import glob
+import threading
+import os
+
+class ImageBatch:
+    def __init__(self, data_path, training_ratio=1, ext='npy', on_sort=False):
+        self._DATA_LIST = glob.glob(data_path)
+        self._DATA_LIST.sort(key=self._sort_path) if on_sort == True else None
+        self._N_DATA = len(self._DATA_LIST)
+        self._TRAINING_RATIO = training_ratio
+        self._TRAIN_DATA_LIST = self._DATA_LIST[:int(self._N_DATA * self._TRAINING_RATIO)]
+        self._TEST_DATA_LIST = self._DATA_LIST[int(self._N_DATA * self._TRAINING_RATIO):]
+        self.N_TRAIN_DATA = len(self._TRAIN_DATA_LIST)
+        self.N_TEST_DATA = self._N_DATA - self.N_TRAIN_DATA
+        self._step = 0  # step is number of calling images_next_batch
+        self._stride = 0  # batch_size/num_thread (for threading)
+        self._total_step = 0  # total_batch == 1 epoch
+        self._batch = 0
+        self._load_func = {'png': cv2.imread, 'npy': np.load}
+        self._load = self._load_func[ext]
+
+    def _sort_path(self,path):
+        return int(os.path.basename(path)[:-4])
+
+    def _thread_worker(self, batch_data_list, start, on_norm=False):
+        for i in range(len(batch_data_list)):
+            data = batch_data_list[i]
+            image = self._load(data)
+            image = image.astype(dtype=np.float32)
+            if on_norm != False:
+                image = min_max_norm(image)
+            self._batch[start+i] = image
+
+    def next_batch(self, batch_size, num_thread=1, training=True, on_norm=False, astype=None):
+        if batch_size < num_thread:
+            num_thread = batch_size
+        elif num_thread < 1:
+            num_thread = 1
+
+        if self._step == 0:
+            self._batch_dict = {}
+            self._stride = batch_size // num_thread
+            self._total_step = self.N_TRAIN_DATA//batch_size if (self.N_TRAIN_DATA % batch_size) ==0 \
+                                else (self.N_TRAIN_DATA//batch_size) + 1
+
+        data_start = self._step * batch_size if self._step+1 != self._total_step else -batch_size
+        data_end = data_start + batch_size if self._step+1 != self._total_step else None
+        data_list = self._TRAIN_DATA_LIST[data_start:data_end] if training == True else self._TEST_DATA_LIST[:batch_size]
+
+        self._batch = [0 for i in range(batch_size)]
+        threads = []
+        for i in range(num_thread):
+            start = i*self._stride
+            end = start+self._stride if (i + 1) != num_thread else None
+            p = threading.Thread(target=self._thread_worker, args=(data_list[start:end],
+                                                                   start,
+                                                                   on_norm))
+            threads.append(p)
+        for thread in threads:
+            thread.start()
+        for thread in threads:
+            thread.join()
+
+        if astype =="array":
+            self._batch = np.array(self._batch)
+        self._step = self._step+1 if self._step+1!=self._total_step else 0  # check step is the last or not
+
+        return self._batch
+
+    def train_shuffle(self, indicese):
+        self._TRAIN_DATA_LIST = [self._TRAIN_DATA_LIST[index] for index in indicese]
+
+    def test_shuffle(self, indicese):
+        self._TEST_DATA_LIST = [self._TEST_DATA_LIST[index] for index in indicese]
+
+class Time:
+    def require_time(start, end, count):
+
+        time = end - start
+        total_time = time * count
+
+        hour = total_time // 3600
+        minute = int(total_time % 60)
+
+        print("Total required time: {}hour {}minute".format(hour, minute))
+
+def min_max_norm(images, mapping=1):
+    '''
+     :param norm_images: single or multiple image data.
+                     shape is (height,width,n_channel) or (batch_size,height,width,n_channel)
+     :return: return min_max_normalized signle or multiple data.
+               shape of output is the same as shape of input
+    '''
+    norm_images = np.copy(images)
+    shape = norm_images.shape
+    norm_images = norm_images.astype(np.float32)
+    norm_images = norm_images if len(shape) != 3 else norm_images.reshape((-1, *shape))
+    batch_size = norm_images.shape[0]
+
+    for i in range(batch_size):
+        max = np.max(norm_images[i])
+        min = np.min(norm_images[i])
+        norm_images[i] = (norm_images[i] - min) / (max - min)
+
+    norm_images = norm_images if len(shape) != 3 else norm_images.reshape(shape)
+    return norm_images * mapping
+
+def display(images_list, title = None, horizontal=True, vertical=False):
+    images_list = np.array(images_list)
+    n_images = len(images_list)
+    batch_size, height, width, n_channel = images_list[0].shape
+    if n_channel == 1:
+      size = [height, width]
+    else:
+      size = [height, width, n_channel]
+
+    rows = batch_size if vertical == False else n_images
+    columns = n_images if vertical == False else batch_size
+    fig, axis = plt.subplots(rows, columns)
+
+    if rows ==1 and columns == 1:
+        image = images_list[0][0].reshape(*size)
+        image = image.astype(np.uint8)
+        plt.imshow(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
+    else:
+        if rows == 1 or columns == 1:
+            images_list = images_list.reshape((-1,height,width,n_channel))
+            for i in range(rows*columns):
+                image = images_list[i].reshape(*size)
+                image = image.astype(np.uint8)
+                axis[i].imshow(cv2.cvtColor(image, cv2.COLOR_BGR2RGB)) if len(size) == 3 else axis[i].imshow(image)
+            '''
+            if title:
+              axis[i].set_title(title[i])
+            '''
+        else:
+            line_1 = columns if vertical==False else rows
+            line_2 = rows if vertical==False else columns
+            for i in range(line_1):
+                for j in range(line_2):
+                    image = images_list[i][j].reshape(*size)
+                    image = image.astype(np.uint8)
+                    axis[i][j].imshow(cv2.cvtColor(image, cv2.COLOR_BGR2RGB)) if len(size) == 3 else axis[i][j].imshow(image)
+
+                    '''
+                    if title:
+                        axis[i][0].set_title(title[i])
+                  '''
+    plt.show()
+
+def psnr(x, y, peak=255):
+    '''
+    :param x: images
+    :param y: another images
+    :param normalized: check x and y images was normalized.
+    :return: return psnr value
+    '''
+    _max = peak
+    rmse = np.sqrt(np.mean((x-y)**2))
+    result = 20 * np.log10(_max/rmse)
+    return result
