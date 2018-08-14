@@ -24,7 +24,7 @@ We implement a tensorflow model for ["Accurate Image Super-Resolution Using Very
 
 ## How to use
 ### Training
-```
+```shell
 python main.py
 
 # if you want to change training epoch ex) 80 epoch (default) -> 120 epoch
