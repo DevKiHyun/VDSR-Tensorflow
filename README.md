@@ -13,3 +13,20 @@ We implement a tensorflow model for ["Accurate Image Super-Resolution Using Very
 - Numpy
 - Opencv2
 - matplotlib
+
+## Files
+- main.py : Execute train.py and pass the default value.
+- vdsr.py : VDSR model definition.
+- train.py : Train the VDSR model and represent the test performance.
+- util.py : Utility functions for this project.
+- log.txt : The log of training process.
+- model : The save files of the trained VDSR.
+
+## How to use
+### Training
+```
+python main.py
+
+# if you want to change training epoch ex) 80 epoch (default) -> 120 epoch
+python main.py --training_epoch 120
+```
