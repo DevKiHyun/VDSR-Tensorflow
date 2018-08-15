@@ -109,29 +109,35 @@ def min_max_norm(images, mapping=1):
     return norm_images * mapping
 
 def display(images_list, title = None, horizontal=True, vertical=False):
-    images_list = np.array(images_list)
     n_images = len(images_list)
-    batch_size, height, width, n_channel = images_list[0].shape
-    if n_channel == 1:
-      size = [height, width]
-    else:
-      size = [height, width, n_channel]
+    batch_size = len(images_list[0])
 
     rows = batch_size if vertical == False else n_images
     columns = n_images if vertical == False else batch_size
     fig, axis = plt.subplots(rows, columns)
 
     if rows ==1 and columns == 1:
-        image = images_list[0][0].reshape(*size)
+        image = images_list[0][0]
+        height, width, n_channel = image.shape
+        size = [height, width, n_channel] if n_channel == 3 else [height, width]
+
+        image = image.reshape(*size)
         image = image.astype(np.uint8)
         plt.imshow(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
     else:
         if rows == 1 or columns == 1:
-            images_list = images_list.reshape((-1,height,width,n_channel))
-            for i in range(rows*columns):
-                image = images_list[i].reshape(*size)
-                image = image.astype(np.uint8)
-                axis[i].imshow(cv2.cvtColor(image, cv2.COLOR_BGR2RGB)) if len(size) == 3 else axis[i].imshow(image)
+            line_1 = columns if vertical == False else rows
+            line_2 = rows if vertical == False else columns
+            for i in range(line_1):
+                for j in range(line_2):
+                    image = images_list[i][j]
+                    height, width, n_channel = image.shape
+                    size = [height, width, n_channel] if n_channel == 3 else [height, width]
+                    image = image.reshape(*size)
+
+                    image = image.astype(np.uint8)
+                    axis[i].imshow(cv2.cvtColor(image, cv2.COLOR_BGR2RGB)) if len(size) == 3 else axis[i].imshow(image)
+
             '''
             if title:
               axis[i].set_title(title[i])
@@ -141,7 +147,11 @@ def display(images_list, title = None, horizontal=True, vertical=False):
             line_2 = rows if vertical==False else columns
             for i in range(line_1):
                 for j in range(line_2):
-                    image = images_list[i][j].reshape(*size)
+                    image = images_list[i][j]
+                    height, width, n_channel = image.shape
+                    size = [height, width, n_channel] if n_channel == 3 else [height, width]
+                    image = image.reshape(*size)
+
                     image = image.astype(np.uint8)
                     axis[i][j].imshow(cv2.cvtColor(image, cv2.COLOR_BGR2RGB)) if len(size) == 3 else axis[i][j].imshow(image)
 
