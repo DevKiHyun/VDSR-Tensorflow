@@ -1,4 +1,4 @@
-# VDSR-Tensorflow
+# VDSR-Tensorflow (2018/08/14)
 
 ## Introduction
 We implement a tensorflow model for ["Accurate Image Super-Resolution Using Very Deep Convolutional Networks", CVPR 16'](http://cv.snu.ac.kr/research/VDSR/VDSR_CVPR2016.pdf).
