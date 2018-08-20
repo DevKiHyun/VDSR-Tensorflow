@@ -108,15 +108,16 @@ def min_max_norm(images, mapping=1):
     norm_images = norm_images if len(shape) != 3 else norm_images.reshape(shape)
     return norm_images * mapping
 
-def display(images_list, title = None, horizontal=True, vertical=False):
+def display(images_list, title=None, figsize=None, axis_off=False, size_equal=False,
+            gridspec=(None, None), zoom_coordinate=(None, None, None, None)):
     n_images = len(images_list)
     batch_size = len(images_list[0])
 
-    rows = batch_size if vertical == False else n_images
-    columns = n_images if vertical == False else batch_size
-    fig, axis = plt.subplots(rows, columns)
+    rows = n_images
+    columns = batch_size
+    fig, axis = plt.subplots(rows, columns, figsize=figsize, gridspec_kw={'wspace': gridspec[0], 'hspace': gridspec[1]})
 
-    if rows ==1 and columns == 1:
+    if rows == 1 and columns == 1:
         image = images_list[0][0]
         height, width, n_channel = image.shape
         size = [height, width, n_channel] if n_channel == 3 else [height, width]
@@ -126,27 +127,31 @@ def display(images_list, title = None, horizontal=True, vertical=False):
         plt.imshow(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
     else:
         if rows == 1 or columns == 1:
-            line_1 = columns if vertical == False else rows
-            line_2 = rows if vertical == False else columns
-            for i in range(line_1):
-                for j in range(line_2):
+            index = 0
+            for i in range(rows):
+                for j in range(columns):
                     image = images_list[i][j]
                     height, width, n_channel = image.shape
                     size = [height, width, n_channel] if n_channel == 3 else [height, width]
                     image = image.reshape(*size)
 
                     image = image.astype(np.uint8)
-                    axis[i].imshow(cv2.cvtColor(image, cv2.COLOR_BGR2RGB)) if len(size) == 3 else axis[i].imshow(image)
+                    axis[index].imshow(cv2.cvtColor(image, cv2.COLOR_BGR2RGB)) if len(size) == 3 else axis[index].imshow(image)
 
-            '''
-            if title:
-              axis[i].set_title(title[i])
-            '''
+                    if zoom_coordinate[0] != None:
+                        axis[index].set_xlim(zoom_coordinate[0], zoom_coordinate[1])
+                        axis[index].set_ylim(zoom_coordinate[3], zoom_coordinate[2])
+                    if size_equal == True: axis[index].set_aspect('auto')
+                    if axis_off == True: axis[index].set_axis_off()
+                    '''
+                    if title[i] != None:
+                      axis[i].set_title(title[i])
+                    '''
+                    index += 1
+
         else:
-            line_1 = columns if vertical==False else rows
-            line_2 = rows if vertical==False else columns
-            for i in range(line_1):
-                for j in range(line_2):
+            for i in range(rows):
+                for j in range(columns):
                     image = images_list[i][j]
                     height, width, n_channel = image.shape
                     size = [height, width, n_channel] if n_channel == 3 else [height, width]
@@ -155,8 +160,13 @@ def display(images_list, title = None, horizontal=True, vertical=False):
                     image = image.astype(np.uint8)
                     axis[i][j].imshow(cv2.cvtColor(image, cv2.COLOR_BGR2RGB)) if len(size) == 3 else axis[i][j].imshow(image)
 
+                    if zoom_coordinate[0] != None and i % 2 == 1: axis[i][j].set_xlim(zoom_coordinate[0], zoom_coordinate[1])
+                    if zoom_coordinate[0] != None and i % 2 == 1: axis[i][j].set_ylim(zoom_coordinate[3], zoom_coordinate[2])
+                    if size_equal == True: axis[i][j].set_aspect('auto')
+                    if axis_off == True: axis[i][j].set_axis_off()
+
                     '''
-                    if title:
+                    if title[i] !=None:
                         axis[i][0].set_title(title[i])
                   '''
     plt.show()
