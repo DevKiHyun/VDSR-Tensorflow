@@ -30,3 +30,10 @@ python main.py
 # if you want to change training epoch ex) 80 epoch (default) -> 120 epoch
 python main.py --training_epoch 120
 ```
+
+## Result
+##### Results on Set 5
+
+|  Scale    | Bicubic | tf_SRCNN | tf_VDSR |
+|:---------:|:-------:|:----:|:----:|
+| 2x - PSNR|   33.33 |   36.70 |   37.10 |
