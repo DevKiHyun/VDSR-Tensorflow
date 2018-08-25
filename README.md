@@ -58,10 +58,6 @@ python demo.py --image_index 13 --scale 4 --coordinate [100,100] --interval 50
 
     ![Imgur](https://github.com/DevKiHyun/VDSR-Tensorflow/blob/master/result/bicubic.png)
  
- - SRCNN (Urban100 / index 1)
- 
-    ![Imgur](https://github.com/DevKiHyun/VDSR-Tensorflow/blob/master/result/SRCNN.png)
- 
  - VDSR (Urban100 / index 1)
  
     ![Imgur](https://github.com/DevKiHyun/VDSR-Tensorflow/blob/master/result/VDSR.png)
