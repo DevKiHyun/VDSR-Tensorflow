@@ -11,9 +11,10 @@ class VDSR:
         self.X = tf.placeholder(tf.float32, shape=[None, None, None, self.n_channel])
         self.Y = tf.placeholder(tf.float32, shape=[None, None, None, self.n_channel])
 
-    def _conv2d_layer(self, inputs, filters_size, stddev, strides=[1,1], add_bias=False, name=None,
-                      padding="SAME", activation=None):
-        filters = self._get_conv_filters(filters_size, name, stddev)
+    def _conv2d_layer(self, inputs, filters_size, strides=[1, 1], add_bias=False, name=None,
+                      padding="SAME", activation=None, stddev=None):
+
+        filters = self._get_conv_filters(filters_size, name, stddev=stddev)
         strides = [1, *strides, 1]
 
         conv_layer = tf.nn.conv2d(inputs, filters, strides=strides, padding=padding, name=name + "_layer")
@@ -25,17 +26,21 @@ class VDSR:
 
         return conv_layer
 
-    def _get_conv_filters(self, filters_size, name, stddev):
-        name = name+"_weights"
-        #initializer = tf.contrib.layers.xavier_initializer()
-        initializer = tf.random_normal
-        conv_weights = tf.Variable(initializer(shape=filters_size, stddev=stddev), name=name)
+    def _get_conv_filters(self, filters_size, name, stddev=None):
+        name = name + "_weights"
+
+        if stddev == None:
+            initializer = tf.contrib.layers.xavier_initializer()
+            conv_weights = tf.Variable(initializer(shape=filters_size), name=name)
+        else:
+            initializer = tf.random_normal
+            conv_weights = tf.Variable(initializer(shape=filters_size, stddev=stddev), name=name)
         self.weights[name] = conv_weights
 
         return conv_weights
 
     def _get_bias(self, bias_size, name):
-        name = name+"_bias"
+        name = name + "_bias"
         bias = tf.Variable(tf.zeros([bias_size]), name=name)
         self.biases[name] = bias
 
