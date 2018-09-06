@@ -175,10 +175,14 @@ def psnr(x, y, peak=255):
     '''
     :param x: images
     :param y: another images
-    :param normalized: check x and y images was normalized.
+    :param peak: MAX_i peak. if int8 -> peak =255
     :return: return psnr value
     '''
     _max = peak
-    rmse = np.sqrt(np.mean((x-y)**2))
+    x = x.astype(np.float32)
+    y = y.astype(np.float32)
+    diff = (x-y).flatten('C')
+
+    rmse = np.sqrt(np.mean(diff**2))
     result = 20 * np.log10(_max/rmse)
     return result
