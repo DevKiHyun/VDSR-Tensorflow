@@ -52,12 +52,12 @@ python demo.py --image_index 13 --scale 4 --coordinate [100,100] --interval 50
 ##### Results on Urban 100 (visual)
 - Original (Urban100 / index 1)
 
-  ![Imgur](https://github.com/DevKiHyun/VDSR-Tensorflow/blob/master/result/original.png)
+  ![Imgur](https://github.com/DevKiHyun/VDSR-Tensorflow/blob/master/VDSR/result/original.png)
  
  - Bicubic (Urban100 / index 1)
 
-    ![Imgur](https://github.com/DevKiHyun/VDSR-Tensorflow/blob/master/result/bicubic.png)
+    ![Imgur](https://github.com/DevKiHyun/VDSR-Tensorflow/blob/master/VDSR/result/bicubic.png)
  
  - VDSR (Urban100 / index 1)
  
-    ![Imgur](https://github.com/DevKiHyun/VDSR-Tensorflow/blob/master/result/VDSR.png)
+    ![Imgur](https://github.com/DevKiHyun/VDSR-Tensorflow/blob/master/VDSR/result/VDSR.png)
