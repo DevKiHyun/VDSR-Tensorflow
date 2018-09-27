@@ -2,7 +2,6 @@ import tensorflow as tf
 import os
 import time
 import numpy as np
-import sys
 
 from VDSR.util import ImageBatch
 from VDSR.util import psnr
@@ -11,18 +10,19 @@ from VDSR.util import Time
 def training(VDSR, config):
     training_ratio = 1
     main_data_path = '.'
+    default_test_scale = 2
     '''
     DATA SET PATH
     '''
     train_x_images_path = '{}/data/train_291_input/*.npy'.format(main_data_path)
     train_y_images_path = '{}/data/train_291_label/*.npy'.format(main_data_path)
-    test_labels_path = '{}/data/Set5/y_ch/*.npy'.format(main_data_path)
-    test_inputs_path = '{}/data/Set5/y_ch_2x/*.npy'.format(main_data_path)
+    test_labels_path = '{}/data/Set5/ground_truth/*.npy'.format(main_data_path)
+    test_inputs_path = '{}/data/Set5/blur_{}x/*.npy'.format(main_data_path, default_test_scale)
     '''
     TRAIN SET(291) and shuffle
     '''
-    train_x_images_batch = ImageBatch(train_x_images_path, training_ratio=1, on_sort=True)
-    train_y_images_batch = ImageBatch(train_y_images_path, training_ratio=1, on_sort=True)
+    train_x_images_batch = ImageBatch(train_x_images_path, training_ratio=1, on_sort=True, ext='npy')
+    train_y_images_batch = ImageBatch(train_y_images_path, training_ratio=1, on_sort=True, ext='npy')
 
     shuffle_indicese = list(range(train_x_images_batch.N_TRAIN_DATA))
     np.random.shuffle(shuffle_indicese)
@@ -36,10 +36,10 @@ def training(VDSR, config):
     test_labels = test_labels_batch.next_batch(batch_size=5)
     test_inputs = test_inputs_batch.next_batch(batch_size=5)
 
-    avg_bicubic_psnr_y_ch = 0
+    avg_bicubic_psnr_rgb = 0
     for i in range(len(test_labels)):
         _psnr = psnr(test_labels[i], test_inputs[i], peak=1)
-        avg_bicubic_psnr_y_ch += _psnr/5
+        avg_bicubic_psnr_rgb += _psnr/5
 
     '''
     HYPERPARAMETER
@@ -71,14 +71,12 @@ def training(VDSR, config):
 
     for epoch in range(training_epoch):
         avg_cost = 0
-        avg_vdsr_psnr_y_ch = 0
+        avg_vdsr_psnr_rgb = 0
         for i in range(total_batch):
             start = time.time()
 
             batch_x = train_x_images_batch.next_batch(batch_size, num_thread=8, astype='array')
             batch_y = train_y_images_batch.next_batch(batch_size, num_thread=8, astype='array')
-            batch_x = np.expand_dims(batch_x, axis=-1)
-            batch_y = np.expand_dims(batch_y, axis=-1)
 
             summaries, _cost, _, g_step, lr = sess.run(
                 [VDSR.summaries, VDSR.cost, VDSR.optimizer, VDSR.global_step, learning_rate],
@@ -96,24 +94,21 @@ def training(VDSR, config):
        '''
         for index in range(len(test_labels)):
             '''
-            Y ch test average PSNR
+            RGB test average PSNR
            '''
-            label_y = (test_labels[index].copy()*255).astype(np.uint8)
-            input_y = test_inputs[index].copy()
+            label = (test_labels[index].copy()*255).astype(np.uint8)
+            input = test_inputs[index].copy()
 
-            shape = input_y.shape
-            result_input_y = input_y.reshape((1, *shape, 1))
-            result_input_y = sess.run(VDSR.conv_net, feed_dict={VDSR.X: result_input_y})
-            result_input_y = result_input_y.reshape(shape).astype(np.float32)
-            result_input_y = np.clip(result_input_y, 0, 1)*255
-            result_input_y = result_input_y.astype(np.uint8)
+            input_y = np.expand_dims(input, axis=0)
+            result = sess.run(VDSR.output, feed_dict={VDSR.X: input_y})[0]
+            result = (result*255).astype(np.uint8)
 
-            _psnr = psnr(label_y, result_input_y, peak=255)
+            _psnr = psnr(label, result, peak=255)
             print(_psnr)
-            avg_vdsr_psnr_y_ch += _psnr / 5
+            avg_vdsr_psnr_rgb += _psnr / 5
 
         print('Epoch:', '%04d' % (epoch + 1), 'cost =', '{:.9f}'.format(avg_cost), 'Learning Rate: ', lr,
-              '\nY_Ch AVG PSNR:: Bicubic: {:.9f} || VDSR: {:.9f}'.format(avg_bicubic_psnr_y_ch, avg_vdsr_psnr_y_ch))
+              '\nRGB AVG PSNR:: Bicubic: {:.9f} || VDSR: {:.9f}'.format(avg_bicubic_psnr_rgb, avg_vdsr_psnr_rgb))
 
         '''
         Do shuffle train_set for 1 epoch
