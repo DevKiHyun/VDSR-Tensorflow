@@ -9,13 +9,13 @@ train_path = [train_input_path, train_label_path]
 test_set = ['Set5']
 test_path = []
 for elem in test_set:
-    y_ch_path = './' + elem + '/y_ch/{}'
+    y_ch_path = './' + elem + '/ground_truth/{}'
     test_path.append(y_ch_path)
-    y_ch_2x_path = './' + elem + '/y_ch_2x/{}'
+    y_ch_2x_path = './' + elem + '/blur_2x/{}'
     test_path.append(y_ch_2x_path)
-    y_ch_3x_path = './' + elem + '/y_ch_3x/{}'
+    y_ch_3x_path = './' + elem + '/blur_3x/{}'
     test_path.append(y_ch_3x_path)
-    y_ch_4x_path = './' + elem + '/y_ch_4x/{}'
+    y_ch_4x_path = './' + elem + '/blur_4x/{}'
     test_path.append(y_ch_4x_path)
     color_path = './'+elem+'/color/{}'
     test_path.append(color_path)
