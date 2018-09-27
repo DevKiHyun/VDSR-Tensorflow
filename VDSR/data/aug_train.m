@@ -18,8 +18,7 @@ for f_iter = 1:numel(f_lst)
     end
     f_path = fullfile(dataDir,f_info.name);
     img_raw = imread(f_path);
-    img_raw = rgb2ycbcr(img_raw);
-    img_raw = im2double(img_raw(:,:,1));
+    img_raw = im2double(img_raw);
     
     img_size = size(img_raw);
     width = img_size(2);
