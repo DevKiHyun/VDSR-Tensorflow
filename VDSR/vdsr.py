@@ -46,21 +46,6 @@ class VDSR:
 
         return bias
 
-    def _residual_block(self, inputs, name=None, activation=None):
-        skip_connection = tf.identity(inputs, name="skip_connection_{}".format(name))
-
-        residual_net = self._conv2d_layer(inputs=inputs, filters_size=[3, 3, 64, 64], stddev=np.sqrt(2.0 / 9 / 64),
-                                    add_bias=True, name="residual_block_{}_1".format(name), activation=activation)
-        residual_net = self._conv2d_layer(inputs=residual_net, filters_size=[3, 3, 64, 64], stddev=np.sqrt(2.0 / 9 / 64),
-                                    add_bias=True, name="residual_block_{}_2".format(name), activation=activation)
-
-        output = tf.add(residual_net, skip_connection)
-
-        if activation != None:
-            output = activation(output)
-
-        return output
-
     def neuralnet(self):
         self.conv_net = self._conv2d_layer(self.X, filters_size=[3, 3, self.n_channel, 64], stddev=np.sqrt(2.0/9), add_bias=True, name="conv_0",
                                           activation=tf.nn.relu)
@@ -72,9 +57,11 @@ class VDSR:
                                            stddev=np.sqrt(2.0 / 9 / 64), add_bias=True, name="conv_19")
         self.conv_net = tf.add(self.conv_net, self.X)
 
+        self.output = tf.clip_by_value(self.conv_net, clip_value_min=0, clip_value_max=1)
+
 
     def optimize(self, learning_rate, grad_clip, on_grad_clipping):
-        self.cost = tf.reduce_sum(tf.nn.l2_loss(tf.subtract(self.Y, self.conv_net)))
+        self.cost = tf.reduce_mean(tf.pow(self.Y - self.output, 2))
 
         # weight decay
         conv_weights = {}
