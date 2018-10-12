@@ -42,12 +42,13 @@ python demo.py
 python demo.py --image_index 13 --scale 4 --coordinate [100,100] --interval 50
 ```
 
-## Result
+## Result 
 ##### Results on Set 5
+##### PSNR on RGB space
 
-|  Scale    | Bicubic | tf_SRCNN | tf_VDSR |
-|:---------:|:-------:|:----:|:----:|
-| 2x - PSNR|   33.33 |   36.70 |   37.10 |
+|  Scale    | Bicubic | tf_VDSR |
+|:---------:|:-------:|:----:|
+| 2x - PSNR|   31.41 |   33.15 |
 
 ##### Results on Urban 100 (visual)
 - Original (Urban100 / index 1)
