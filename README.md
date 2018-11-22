@@ -24,6 +24,17 @@ We implement a tensorflow model for ["Accurate Image Super-Resolution Using Very
 - model : The save files of the trained VDSR.
 
 ## How to use
+### Pre-processing
+
+#### You should put the images of the 291 dataset into the '291' directory in the 'data' directory.
+#### Step 1
+##### You should execute aug_train.m and aug_test.m in 'data' directory.
+##### Recommend 'Octave' platform to execute matlab code '.m' 
+#### Step 2 (Final)
+##### You should execute preprocess.py in 'data' directory.
+```shell
+python preprocess.py
+```
 ### Training
 ```shell
 python main.py
