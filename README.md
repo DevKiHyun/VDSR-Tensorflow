@@ -28,8 +28,15 @@ We implement a tensorflow model for ["Accurate Image Super-Resolution Using Very
 
 #### You should put the images of the 291 dataset into the '291' directory in the 'data' directory.
 #### Step 1
-##### You should execute aug_train.m and aug_test.m in 'data' directory.
-##### Recommend 'Octave' platform to execute matlab code '.m' 
+```shell
+# !!!IMPORTANT!!!
+# You should execute aug_train.m and aug_test.m in 'data' directory.
+# Recommend 'Octave' platform to execute matlab code '.m' 
+
+aug_train.m 
+aug_test.m
+
+```
 #### Step 2 (Final)
 ##### You should execute preprocess.py in 'data' directory.
 ```shell
