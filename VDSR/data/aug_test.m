@@ -32,7 +32,7 @@ for f_iter = 1:numel(f_lst)
     img_size = size(img_raw);
     
     img = img_raw;
-    patch_label_name = sprintf('%s/%d',folder_y_ch,count)
+    patch_label_name = sprintf('%s/%d',folder_label,count)
     save(sprintf('%s.mat', patch_label_name), 'img' , '-v6');
     
     img = imresize(imresize(img_raw,1/2,'bicubic'),[img_size(1),img_size(2)],'bicubic');
